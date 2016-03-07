@@ -40,6 +40,11 @@
         thisDivChildHeight = thisDiv[0].scrollHeight;
     }
 
+    //获取可视区外的高度
+    function getContentScrollHeight(){
+        return thisDiv[0].scrollHeight;
+    }
+
     //设置滚动条位置
     function setScrollBarPosition(scrollBarBg){
         var height = opt.height || thisDiv.innerHeight();
@@ -76,10 +81,10 @@
         thisDiv.append(scrollBarDom)
     }
 
-    //滚动目标dom
-    function scrollThisDiv(direction){
-        var scrollTop = thisDiv.scrollTop();
-        thisDiv.scrollTop(scrollTop+=(opt.scrollLength*direction));
+    //获取轨道长度
+    function getRailway(){
+        var block = scrollBarDom.find(">div");
+        return scrollBarDom.height()-block.innerHeight()
     }
 
     //滚动滚动条
@@ -91,8 +96,8 @@
         if(afterScrollTop < 0){
             afterScrollTop = 0;
         }
-        if(afterScrollTop > scrollBarDom.height()-block.outerHeight()){
-            afterScrollTop = scrollBarDom.height()-block.outerHeight();
+        if(afterScrollTop > scrollBarDom.height()-block.innerHeight()){
+            afterScrollTop = scrollBarDom.height()-block.innerHeight();
         }
         block.css("top",afterScrollTop)
     }
@@ -107,9 +112,21 @@
         }
     }
 
+    //根据滚动块位置移动内容主体
+    function moveContentByBarBlock(){
+        var barBlockTop =$(scrollBarDom).children("div").position().top;
+        var contentScrollTop = Math.ceil(barBlockTop/getRailway()*(getContentScrollHeight()-$(thisDiv).innerHeight()));
+        thisDiv.scrollTop(contentScrollTop);
+    }
+
     //拖拽滚动块
     function dragScrollBlock(){
-
+        var block = scrollBarDom.find(">div");
+        block.mousedown(function(e){
+            var event = e || window.event;
+            var mX = event.clientX;
+            var mY = event.clientY;
+        })
     }
 
     //声明的xiaoScrollBar控件
@@ -128,12 +145,14 @@
             scrollBarDom.hide();
         })
 
+        dragScrollBlock();
+
         //ie chrom ,火狐 鼠标滚轮事件不同
         thisDiv.bind("mousewheel DOMMouseScroll",function(e){
             var direction = mousewheelDirection(e);
-            scrollThisDiv(direction);
-            scrollXiaoScrollBar(direction)
-            setScrollBarPosition(scrollBarDom)
+            scrollXiaoScrollBar(direction);
+            moveContentByBarBlock();
+            setScrollBarPosition(scrollBarDom);
             return false;
         })
 
