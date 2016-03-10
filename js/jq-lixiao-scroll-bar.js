@@ -11,13 +11,15 @@
 
     //默认参数
     XiaoScrollBar.DEFAULTS = {
-        "width":"15px",
+        "width":"10px",
         "position":"absolute",
         "top":0,
-        "right":0,
-        "background":"blue",
-        "scrollBarBlockColor":"#EA7E7E",
-        "scrollLength":30
+        "right":3,
+        "radius":5,//圆角
+        "verticalMargin":3,//竖直间距
+        "background":"#A09999",
+        "scrollBarBlockColor":"#5C5C5C",
+        "scrollLength":30//滚轮滚动的长度
     };
 
     //初始化
@@ -50,26 +52,33 @@
         }
     }
 
-    //设置滚动块的高度
+    //设置滚动块的样式
     XiaoScrollBar.prototype.setscrollBarBlock = function(scrollBarBlock){
         var contentHeight = this.$element[0].scrollHeight;
         var elementHeight = this.$element.height()
         var height = (elementHeight/(contentHeight-elementHeight))*elementHeight;
         scrollBarBlock.css({
+            "borderRadius":this.options.radius,
             "height":height,
             "background":this.options.scrollBarBlockColor
         });
     };
 
-    //设置滚动条的高度
+    //设置滚动条样式
     XiaoScrollBar.prototype.setscrollBar = function(scrollDom){
-        var height = this.options.height || this.$element.innerHeight();
         scrollDom.css({
+            "borderRadius":this.options.radius,
             "width":this.options.width,
-            "height":height,
+            "margin":this.options.verticalMargin+"0",
+            "height":this.getScrollHeight(),
             "background":this.options.background
         });
     };
+
+    XiaoScrollBar.prototype.getScrollHeight = function(){
+        var height = this.options.height || this.$element.innerHeight();
+        return height-this.options.verticalMargin*2
+    }
 
     //设置滚动条位置
     XiaoScrollBar.prototype.setScrollPosition = function(scrollDom){
@@ -78,7 +87,7 @@
         }
         scrollDom.css({
             "position":this.options.position,
-            "top":this.options.top+this.$element.scrollTop(),
+            "top":this.options.top+this.$element.scrollTop()+this.options.verticalMargin,
             "right":this.options.right,
         });
     };
@@ -166,10 +175,10 @@
             this.$element.css("position","relative")
         }
         this.$scrollDom.css({
-            "width":this.options.width,
-            "height":height,
+            //"width":this.options.width,
+            //"height":height,
             "position":this.options.position,
-            "top":this.options.top+this.$element.scrollTop(),
+            "top":this.options.top+this.$element.scrollTop()+this.options.verticalMargin,
             "right":this.options.right,
             "background":this.options.background
         });
@@ -207,12 +216,6 @@
             $(this).css("cursor","auto");
             isDrag = false;
         })
-
-        //$block.mousemove(function(e){
-        //    var mX = e.pageX;
-        //    var mY = e.pageY;
-        //    console.log(mX+" "+mY)
-        //})
 
     }
 
