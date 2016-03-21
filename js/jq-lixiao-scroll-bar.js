@@ -32,23 +32,38 @@
     //创建滚动条
     XiaoScrollBar.prototype.createScrollBarView = function(){
         if(this.isShowScrollBar()){
-            var scrollDom = this.$scrollDom || $("<div class='xiaoScrollBar' style='position:absolute;'></div>");
-            var scrollBarBlock = this.$scrollDom ?this.$scrollDom.find("div") : $("<div style='position:relative;top:0;' class='xiaoScrollBlock'></div>");
-            this.setscrollBarBlock(scrollBarBlock);
-            this.setscrollBar(scrollDom)
-            this.setScrollPosition(scrollDom);
-            scrollDom.append(scrollBarBlock);
             if(!this.$scrollDom){
-                this.$scrollDom = scrollDom
+                var scrollDom = this.$scrollDom || $("<div class='xiaoScrollBar' style='position:absolute;'></div>");
+                var scrollBarBlock = this.$scrollDom ?this.$scrollDom.find("div") : $("<div style='position:relative;top:0;' class='xiaoScrollBlock'></div>");
+                this.setScrollBarWrap();
+                this.setscrollBarBlock(scrollBarBlock);
+                this.setscrollBar(scrollDom)
+                this.setScrollPosition(scrollDom);
+                scrollDom.append(scrollBarBlock);
+                if(!this.$scrollDom){
+                    this.$scrollDom = scrollDom
+                }
             }
-            this.$element.append(this.$scrollDom)
+            this.$element.parent().append(this.$scrollDom)
+        }
+    }
+
+    //设置滚动层外层包裹
+    XiaoScrollBar.prototype.setScrollBarWrap = function(){
+        if(!this.$scrollBarWrap){
+            this.$scrollBarWrap = $("<div style='position:relative'></div>")
+            var width = this.$element.outerWidth();
+            this.$scrollBarWrap.css({
+                "width":width
+            })
+            this.$element.wrap(this.$scrollBarWrap);
         }
     }
 
     //销毁滚动条
     XiaoScrollBar.prototype.destoryShowScrollBar = function(){
         if(this.$scrollDom){
-            this.$element.find(this.$scrollDom).remove()
+            this.$element.parent().find(this.$scrollDom).remove()
         }
     }
 
@@ -56,6 +71,7 @@
     XiaoScrollBar.prototype.setscrollBarBlock = function(scrollBarBlock){
         var contentHeight = this.$element[0].scrollHeight;
         var elementHeight = this.$element.height()
+        console.log(contentHeight+"=====contentHeight")
         var height = (elementHeight/(contentHeight-elementHeight))*elementHeight;
         scrollBarBlock.css({
             "borderRadius":this.options.radius,
@@ -82,12 +98,13 @@
 
     //设置滚动条位置
     XiaoScrollBar.prototype.setScrollPosition = function(scrollDom){
-        if(this.$element.css("position") == "static"){
-            this.$element.css("position","relative")
+        if(this.$element.parent().css("position") == "static"){
+            this.$element.parent().css("position","relative")
         }
+        var top = ($("#div1").outerHeight()-$("#div1").innerHeight())/2+this.options.verticalMargin;
         scrollDom.css({
             "position":this.options.position,
-            "top":this.options.top+this.$element.scrollTop()+this.options.verticalMargin,
+            "top":top,
             "right":this.options.right,
         });
     };
@@ -124,7 +141,7 @@
             var direction = _this.mousewheelDirection(e);
             _this.scrollXiaoScrollBar(direction);
             _this.moveContentByBarBlock();
-            _this.setScrollBarPosition();
+            //_this.setScrollBarPosition();
             return false;
         })
     }
@@ -178,7 +195,7 @@
             //"width":this.options.width,
             //"height":height,
             "position":this.options.position,
-            "top":this.options.top+this.$element.scrollTop()+this.options.verticalMargin,
+            "top":this.$element.position().top,
             "right":this.options.right,
             "background":this.options.background
         });
@@ -207,7 +224,7 @@
                 }
                 block.css("top",blockTop);
                 _this.moveContentByBarBlock();
-                _this.setScrollBarPosition();
+                //_this.setScrollBarPosition();
                 return false;
             }
         })
