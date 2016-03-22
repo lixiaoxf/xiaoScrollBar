@@ -29,8 +29,15 @@
         this.addXiaoScrollBarEvent()
     }
 
+    XiaoScrollBar.prototype.getScrollHeight = function(){
+        var contentHeight = this.$element[0].scrollHeight;
+        alert(contentHeight)
+        alert(contentHeight+this.$element.outerHeight())
+    }
+
     //创建滚动条
     XiaoScrollBar.prototype.createScrollBarView = function(){
+        this.getScrollHeight();
         if(this.isShowScrollBar()){
             if(!this.$scrollDom){
                 var scrollDom = this.$scrollDom || $("<div class='xiaoScrollBar' style='position:absolute;'></div>");
@@ -51,7 +58,7 @@
     //设置滚动层外层包裹
     XiaoScrollBar.prototype.setScrollBarWrap = function(){
         if(!this.$scrollBarWrap){
-            this.$scrollBarWrap = $("<div style='position:relative'></div>")
+            this.$scrollBarWrap = $("<div style='position:relative;'></div>")
             var width = this.$element.outerWidth();
             this.$scrollBarWrap.css({
                 "width":width
@@ -71,7 +78,6 @@
     XiaoScrollBar.prototype.setscrollBarBlock = function(scrollBarBlock){
         var contentHeight = this.$element[0].scrollHeight;
         var elementHeight = this.$element.height()
-        console.log(contentHeight+"=====contentHeight")
         var height = (elementHeight/(contentHeight-elementHeight))*elementHeight;
         scrollBarBlock.css({
             "borderRadius":this.options.radius,
@@ -86,12 +92,12 @@
             "borderRadius":this.options.radius,
             "width":this.options.width,
             "margin":this.options.verticalMargin+"0",
-            "height":this.getScrollHeight(),
+            "height":this.getScrollBarHeight(),
             "background":this.options.background
         });
     };
-
-    XiaoScrollBar.prototype.getScrollHeight = function(){
+    //
+    XiaoScrollBar.prototype.getScrollBarHeight = function(){
         var height = this.options.height || this.$element.innerHeight();
         return height-this.options.verticalMargin*2
     }
