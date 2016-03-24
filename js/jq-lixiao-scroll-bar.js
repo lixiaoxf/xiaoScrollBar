@@ -31,8 +31,8 @@
 
     XiaoScrollBar.prototype.getScrollHeight = function(){
         var contentHeight = this.$element[0].scrollHeight;
-        alert(contentHeight)
-        alert(contentHeight+this.$element.outerHeight())
+        //alert(contentHeight)
+        //alert(contentHeight+this.$element.outerHeight())
     }
 
     //创建滚动条
@@ -77,8 +77,8 @@
     //设置滚动块的样式
     XiaoScrollBar.prototype.setscrollBarBlock = function(scrollBarBlock){
         var contentHeight = this.$element[0].scrollHeight;
-        var elementHeight = this.$element.height()
-        var height = (elementHeight/(contentHeight-elementHeight))*elementHeight;
+        var elementHeight = scrollBarHeight = this.$element.innerHeight()
+        var height = (elementHeight/(contentHeight))*scrollBarHeight;
         scrollBarBlock.css({
             "borderRadius":this.options.radius,
             "height":height,
@@ -180,7 +180,7 @@
     //根据滚动块位置移动内容
     XiaoScrollBar.prototype.moveContentByBarBlock = function(){
         var barBlockTop =this.$scrollDom.children(".xiaoScrollBlock").position().top;
-        var contentScrollTop = Math.ceil(barBlockTop/this.getRailway()*(this.$element[0].scrollHeight-this.$element.innerHeight()));
+        var contentScrollTop = Math.ceil(barBlockTop/this.getRailway()*(this.$element[0].scrollHeight-this.$element.height()));
         this.$element.scrollTop(contentScrollTop);
     }
 
