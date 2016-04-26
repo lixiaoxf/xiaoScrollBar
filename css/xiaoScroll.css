@@ -1,3 +1,35 @@
-.xiaoScrollBar{
+.xiaoScrollBarWrap{
+    position: relative;
+    overflow: hidden;
+}
 
+.xiaoScrollBar{
+    position: absolute;
+    height: 100%;
+    width: 12px;
+}
+
+.xiaoScrollBarContent{
+    overflow: hidden;
+}
+
+.prev{
+    display: block;
+    height: 5%;
+    background: lightcoral;
+}
+
+.next{
+    height: 5%;
+    display: block;
+    background: lightcoral;
+}
+
+.xiaoScrollBarBackground{
+    background: #B6AFAF;
+    height: 90%;
+}
+
+.xiaoScrollBarBlock{
+    background: #fff;
 }
