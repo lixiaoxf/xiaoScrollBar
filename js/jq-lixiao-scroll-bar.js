@@ -105,7 +105,7 @@
         scrollDom.css({
             "position":this.options.position,
             "top":top,
-            "right":this.options.right,
+            "right":this.options.right
         });
     };
 
@@ -130,7 +130,7 @@
         })
 
         this.$element.bind("mouseleave",function(){
-            _this.destoryShowScrollBar();
+            //_this.destoryShowScrollBar();
         })
 
         //鼠标拖动滚动块
@@ -245,3 +245,50 @@
     $.fn.xiaoScrollBar.Constructor = XiaoScrollBar;
 })(jQuery)
 
+$(function(){
+
+    function xiaoScrollBar(){
+        this.options = null;
+        this.$element = null;
+        this.init(element,options)
+    }
+
+    XiaoScrollBar.VERSION = "1.0.0"
+
+    //默认参数
+    XiaoScrollBar.DEFAULTS = {
+        "width":"10px",
+        "position":"absolute",
+        "top":0,
+        "right":3,
+        "radius":5,//圆角
+        "verticalMargin":3,//竖直间距
+        "background":"#A09999",
+        "scrollBarBlockColor":"#5C5C5C",
+        "scrollLength":30//滚轮滚动的长度
+    };
+
+    //初始化
+    XiaoScrollBar.prototype.init = function(element,options){
+        this.$element = $(element);
+        this.options = $.extend({},XiaoScrollBar.DEFAULTS,options)
+        this.initXiaoScrollBarView();
+        this.addXiaoScrollBarEvent();
+    }
+
+    //初始化
+    XiaoScrollBar.prototype.initXiaoScrollBarView = function(){
+        var scrollBar =  this.__createScrollBar();
+    }
+
+
+
+    function Plugin(option){
+        var opt = option || {};
+        new XiaoScrollBar(this,opt);
+    }
+
+    $.fn.xiaoScrollBar = Plugin;
+    $.fn.xiaoScrollBar.Constructor = xiaoScrollBar;
+
+})(jQuery)
