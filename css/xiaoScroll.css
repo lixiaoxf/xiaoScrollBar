@@ -26,10 +26,13 @@
 }
 
 .xiaoScrollBarBackground{
+    position: relative;
     background: #B6AFAF;
     height: 90%;
 }
 
 .xiaoScrollBarBlock{
+    position: absolute;
+    width: 100%;
     background: #fff;
 }

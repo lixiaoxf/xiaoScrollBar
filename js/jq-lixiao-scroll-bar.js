@@ -276,9 +276,12 @@
 
     XiaoScrollBar.VERSION = "1.0.0"
 
-    //默认参数
+    /**
+     * 默认参数
+     * **/
     XiaoScrollBar.DEFAULTS = {
-
+        "moveBlockLength":30,
+        "moveTimingFunction":"ease"
     };
 
     /**
@@ -288,7 +291,7 @@
         this.$element = $(element);
         this.options = $.extend({},XiaoScrollBar.DEFAULTS,options)
         this.initXiaoScrollBarView();
-        //this.addXiaoScrollBarEvent();
+        this.initXiaoScrollBarEvent();
     }
 
     /**
@@ -348,7 +351,9 @@
      * 计算滚动条样式
      * **/
     XiaoScrollBar.prototype.__calculateUI = function(){
+        //计算滚动条背景
         this.__calculateScrollBar();
+        //计算滚动块
         this.__calculateBlock();
     }
 
@@ -379,6 +384,38 @@
            blockHeight = (viewHeight/contentHeight)*backgroundHeight;
        this.xiaoScrollDOM["block"].height(blockHeight)
 
+    }
+
+    /**
+     * 初始化XiaoScrollBar事件
+     * **/
+    XiaoScrollBar.prototype.initXiaoScrollBarEvent = function(){
+        this.moveBlock(180,"top")
+    }
+
+    /**
+     * 移动
+     * **/
+    XiaoScrollBar.prototype.moveBlock = function(target,attr){
+        var self = this,timer = this.xiaoScrollDOM["block"].data("xiaoTimer"),element =this.xiaoScrollDOM["block"];
+        clearInterval(timer)
+        timer = setInterval(function(){
+            var curpotion =element.position()[attr],speed = getSpeed(curpotion,target)
+            if(curpotion == target){
+                clearInterval(timer);
+            }else{
+                css = {}
+                css[attr] = curpotion+speed;
+                element.css(css)
+            }
+        },24)
+        element.data("xiaoTimer",timer);
+    }
+
+    function getSpeed(curPostion,targetPosition){
+        var speed = (targetPosition-curPostion)/13;
+        speed = speed>0?Math.ceil(speed):Math.floor(speed);
+        return speed;
     }
 
     function Plugin(option){
