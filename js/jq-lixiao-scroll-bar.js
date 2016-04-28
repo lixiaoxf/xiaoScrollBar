@@ -280,7 +280,7 @@
      * 默认参数
      * **/
     XiaoScrollBar.DEFAULTS = {
-        "moveBlockLength":30,
+        "moveBlockLength":40,
         "moveTimingFunction":"ease"
     };
 
@@ -288,8 +288,8 @@
      * 常量
      * **/
     var CONSTANT = {
-        "MOVEUP":-1,
-        "MOVEDOWN":1
+        "OPPOSITE":-1,//反向
+        "POSITIVE":1//正向
     }
 
     /**
@@ -391,43 +391,77 @@
            viewHeight = this.$element.innerHeight(),
            blockHeight = (viewHeight/contentHeight)*backgroundHeight;
        this.xiaoScrollDOM["block"].height(blockHeight)
-
     }
 
     /**
      * 初始化XiaoScrollBar事件
      * **/
     XiaoScrollBar.prototype.initXiaoScrollBarEvent = function(){
-        this.moveContentByBlockY(CONSTANT["MOVEDOWN"])
+        var self = this;
 
+         //ie chrom ,火狐 鼠标滚轮事件不同
+        this.$element.bind("mousewheel DOMMouseScroll",function(e){
+            var direction = mousewheelDirection(e);
+            self.scrollContentByBlockY(direction)
+            return false;
+        })
+
+
+    }
+
+    /**
+     * 拖拽滚动块
+     * **/
+    XiaoScrollBar.prototype.dragBlock = function(){
+
+        
+
+    }
+
+    //获取滚轮滚动方向
+    function mousewheelDirection(e){
+        var event = window.event || e;
+        if(event.wheelDelta){
+            return event.wheelDelta  < 0 ? CONSTANT["POSITIVE"] : CONSTANT["OPPOSITE"]
+        }else{
+            return event.detail  > 0 ? CONSTANT["POSITIVE"] : CONSTANT["OPPOSITE"]
+        }
     }
 
     /**
      * 滚动滚动块移动内容
      * **/
-    XiaoScrollBar.prototype.moveContentByBlockY = function(direction){
+    XiaoScrollBar.prototype.scrollContentByBlockY = function(direction){
         var contentTarget,blockTop = this.xiaoScrollDOM["block"].position().top,
             blockTarget = direction*this.options["moveBlockLength"]+blockTop,
             blockBackgroundHeight = this.xiaoScrollDOM["background"].innerHeight(),
-            blockHeight = this.xiaoScrollDOM["block"].innerHeight(),
-            contentScrollTop = this.$element.scrollTop(),
-            elementHeight = this.$element.innerHeight(),
-            contentScrollHeight = this.$element[0].scrollHeight,
-            //文档滚动的长度等于滚动块滚动长度X文档总高度/滚动条背景高度
-            contentTarget = contentScrollTop+Math.round(this.options["moveBlockLength"]*(contentScrollHeight/blockBackgroundHeight));
-            if(direction==CONSTANT["MOVEDOWN"]){
-                blockTarget = blockTarget  >blockBackgroundHeight-blockHeight ? blockBackgroundHeight-blockHeight:blockTarget;
-                contentTarget = contentTarget > contentScrollHeight - elementHeight ? contentScrollHeight - elementHeight : contentTarget;
-            }else if (direction == CONSTANT["MOVEUP"]){
-                blockTarget = blockTarget < 0 ? 0 : blockTarget;
-                contentTarget = contentTarget < 0? 0 : contentTarget;
-            }
-
+            blockHeight = this.xiaoScrollDOM["block"].height();
+        if(blockTarget >= blockBackgroundHeight-blockHeight){
+            blockTarget = blockBackgroundHeight-blockHeight
+        }else if(blockTarget <= 0){
+            blockTarget = 0;
+        }
         this.moveBlock(blockTarget,"top");
-        this.moveContent(contentTarget)
-
+        this.moveContentByBlockY(blockTarget)
     }
 
+    /**
+     * 移动滚动块时移动内容
+     * **/
+    XiaoScrollBar.prototype.moveContentByBlockY = function(blockPostion){
+        var contentTarget,blockTop = !blockPostion && blockPostion!=0 ?this.xiaoScrollDOM["block"].position().top:blockPostion,
+            blockBackgroundHeight = this.xiaoScrollDOM["background"].innerHeight(),
+            blockHeight = this.xiaoScrollDOM["block"].height(),
+            elementHeight = this.$element.innerHeight(),
+            contentScrollHeight = this.$element[0].scrollHeight;
+            contentTarget =Math.round((blockTop/(blockBackgroundHeight-blockHeight))*(contentScrollHeight-elementHeight));
+        if(contentTarget >=  contentScrollHeight - elementHeight){
+            contentTarget = contentScrollHeight - elementHeight;
+        }else if(contentTarget <= 0){
+            contentTarget = 0;
+        }
+        this.moveContent(contentTarget)
+    }
 
     /**
      * 移动滚动块
@@ -473,7 +507,7 @@
     }
 
     function getSpeed(curPostion,targetPosition){
-        var speed = (targetPosition-curPostion)/13;
+        var speed = (targetPosition-curPostion)/10;
         speed = speed>0?Math.ceil(speed):Math.floor(speed);
         return speed;
     }
