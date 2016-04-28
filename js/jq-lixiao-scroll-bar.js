@@ -414,7 +414,15 @@
      * **/
     XiaoScrollBar.prototype.dragBlock = function(){
 
-        
+        var block = this.xiaoScrollDOM["block"]
+            mouseY,isDragIng = false;
+        block.on("mouseenter",function(e){
+            var event = window.event || e;
+            mouseY = e.pageY;
+            isDragIng = true;
+        })
+
+        block.on("mousemove")
 
     }
 
