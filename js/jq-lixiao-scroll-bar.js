@@ -262,15 +262,11 @@
  *     </div>
  *
  * **/
-
-
-
 (function($){
 
     function XiaoScrollBar(element,options){
         this.options = null;
         this.$element = null;
-        this.xiaoScrollDOM = {};
         this.init(element,options)
     }
 
@@ -280,8 +276,7 @@
      * 默认参数
      * **/
     XiaoScrollBar.DEFAULTS = {
-        "moveBlockLength":40,
-        "moveTimingFunction":"ease"
+        "moveBlockLength":40
     };
 
     /**
@@ -297,7 +292,11 @@
      * **/
     XiaoScrollBar.prototype.init = function(element,options){
         this.$element = $(element);
-        this.options = $.extend({},XiaoScrollBar.DEFAULTS,options)
+        this.options = $.extend({},XiaoScrollBar.DEFAULTS,options);
+        this.xiaoScrollDOM = {};
+        this.operateStatus = {
+            "isisDragIng":false
+        };
         this.initXiaoScrollBarView();
         this.initXiaoScrollBarEvent();
     }
@@ -317,7 +316,6 @@
      * **/
     XiaoScrollBar.prototype.__createScrollBar = function(){
         this.xiaoScrollDOM["wrap"] = $('<div class="xiaoScrollBarWrap"></div>');
-        //this.$element.wrap($('<div class="xiaoScrollBarWrap"></div>'));
         var xiaoScrollBarHtml =
                         '<div class="xiaoScrollBar">'+
                             '<a class="prev"></a>'+
@@ -405,7 +403,7 @@
             self.scrollContentByBlockY(direction)
             return false;
         })
-
+        this.dragBlock()
 
     }
 
@@ -413,16 +411,41 @@
      * 拖拽滚动块
      * **/
     XiaoScrollBar.prototype.dragBlock = function(){
-
-        var block = this.xiaoScrollDOM["block"]
-            mouseY,isDragIng = false;
-        block.on("mouseenter",function(e){
+        this.operateStatus["isDragIng"] = false
+        var block = this.xiaoScrollDOM["block"],
+            mouseDownY,self=this;
+        block.on("mousedown",function(e){
             var event = window.event || e;
-            mouseY = e.pageY;
-            isDragIng = true;
+            mouseDownY = e.pageY;
+            self.operateStatus["isDragIng"] = true;
         })
 
-        block.on("mousemove")
+        this.xiaoScrollDOM["wrap"].on("mousemove",function(e){
+            if(self.operateStatus["isDragIng"]){
+                var event = window.event || e,
+                    curMoveY = e.pageY,
+                    blockMoveLength = curMoveY - mouseDownY,
+                    blockTop = block.position().top,
+                    afterMoveBlockTop = blockTop+blockMoveLength,
+                    blockBackgroundHeight = self.xiaoScrollDOM["background"].innerHeight(),
+                    blockHeight = self.xiaoScrollDOM["block"].height();
+                if(afterMoveBlockTop<0){
+                    afterMoveBlockTop = 0;
+                }else if(afterMoveBlockTop>blockBackgroundHeight-blockHeight){
+                    afterMoveBlockTop = blockBackgroundHeight-blockHeight;
+                }
+                block.css({
+                    "top":afterMoveBlockTop
+                })
+                mouseDownY = curMoveY;
+                self.moveContentByBlockY()
+            }
+            return false;
+        })
+
+        this.xiaoScrollDOM["wrap"].on("mouseup mouseleave",function(e){
+            self.operateStatus["isDragIng"] = false;
+        })
 
     }
 
@@ -455,6 +478,7 @@
 
     /**
      * 移动滚动块时移动内容
+     * @param blockPostion 这个参数式滚动块的top值 如果不传就是当前滚动块的top值
      * **/
     XiaoScrollBar.prototype.moveContentByBlockY = function(blockPostion){
         var contentTarget,blockTop = !blockPostion && blockPostion!=0 ?this.xiaoScrollDOM["block"].position().top:blockPostion,
@@ -475,20 +499,20 @@
      * 移动滚动块
      * **/
     XiaoScrollBar.prototype.moveBlock = function(target,attr,callback){
-        var self = this,timer = this.xiaoScrollDOM["block"].data("xiaoTimer"),element =this.xiaoScrollDOM["block"];
+        var self = this,timer = this.xiaoScrollDOM["block"].data("xiaoTimer"),block =this.xiaoScrollDOM["block"];
         clearInterval(timer)
         timer = setInterval(function(){
-            var curpotion =element.position()[attr],speed = getSpeed(curpotion,target)
-            if(curpotion == target){
+            var curpotion =block.position()[attr],speed = getSpeed(curpotion,target)
+            if(curpotion == target||self.isStopMove()){
                 clearInterval(timer);
             }else{
                 css = {}
-                css[attr] = curpotion+speed;
-                element.css(css)
+                css[attr] = speed < 0 ? Math.ceil(curpotion+speed):Math.floor(curpotion+speed);
+                block.css(css)
             }
             callback && callback();
         },24)
-        element.data("xiaoTimer",timer);
+        block.data("xiaoTimer",timer);
     }
 
     /**
@@ -514,8 +538,17 @@
             this.$element.data("xiaoTimer",timer);
     }
 
+    /**
+     * 是否停止移动
+     * **/
+    XiaoScrollBar.prototype.isStopMove = function(){
+        return this.operateStatus["isisDragIng"]
+    }
+
+
+    //
     function getSpeed(curPostion,targetPosition){
-        var speed = (targetPosition-curPostion)/10;
+        var speed = (targetPosition-curPostion)/12;
         speed = speed>0?Math.ceil(speed):Math.floor(speed);
         return speed;
     }
