@@ -1,0 +1,31 @@
+*{padding:0;margin:0;}
+div{
+    padding:22px;
+}
+p{
+    width: 300px;
+    height:400px;
+    padding:5px 15px;
+}
+.title{
+    margin-bottom: 35px;
+    border-bottom: 3px solid #000;
+}
+.demo {
+    padding:45px;
+    float: left;
+    line-height: 35px;
+}
+
+.cont2{
+    background: #000000;
+    color: #ffffff;
+}
+
+.cont3{
+    background: #BC9808;
+    color: #ffffff;
+}
+.cont3{
+    padding:5px 25px;
+}

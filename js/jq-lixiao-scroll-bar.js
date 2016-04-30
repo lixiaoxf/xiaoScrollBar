@@ -4,7 +4,7 @@
 
 /**
  *
- * 生成的结构
+ * 生成的结构:
  *
  *     <div class="xiaoScrollBarWrap">
  *         <div class="xiaoScrollBarContent">用户想要滚动的元素</div>
@@ -17,6 +17,23 @@
  *         </div>
  *     </div>
  *
+ *
+ *  参数说明:
+ *
+ *  @param moveBlockLength       int类型 每次滚动块滚动的距离
+ *  @param hasButton             boolean类型 是否显示上下两端的按钮
+ *  @param buttonPercentum       int类型 按钮所占比例
+ *  @param marginTop             int类型 代表滚动条整体距离顶部的百分比
+ *  @param contentMoveCallBack   function 内容滚动时的回调函数
+ *  @param blockCss              object 滚动块样式
+ *  @param backgroundCss         object 滚动条样式
+ *  @param scrollBarCss          object 滚动条整体样式
+ *  @param nextButtonCss         object 下方滚动按钮样式
+ *  @param prevButtonCss         object 上方滚动按钮样式
+ *
+ *  注意:
+ *  1. 参数中的样式的优先级是大于样式表中的
+ *  2. 不建议直接设置滚动块滚动条的高度
  * **/
 (function($){
 
@@ -32,7 +49,16 @@
      * 默认参数
      * **/
     XiaoScrollBar.DEFAULTS = {
-        "moveBlockLength":40
+        "moveBlockLength":40,
+        "hasButton":true,
+        "buttonPercentum":5,
+        "marginTop":2,
+        "contentMoveCallBack":function(){},
+        "blockCss":{},
+        "backgroundCss":{},
+        "scrollBarCss":{},
+        "nextButtonCss":{},
+        "prevButtonCss":{}
     };
 
     /**
@@ -62,9 +88,11 @@
      * **/
     XiaoScrollBar.prototype.initXiaoScrollBarView = function(){
         this.__createScrollBar();
-        this.__synXiaoScroll();
         this.__basicUIStyle();
+        this.__configUI();
         this.__calculateUI();
+        this.__synXiaoScroll();
+
     }
 
     /**
@@ -97,6 +125,35 @@
         this.xiaoScrollDOM["wrap"].append(this.xiaoScrollDOM["scrollBar"]);
     }
 
+    XiaoScrollBar.prototype.__configUI = function(){
+        var buttonHeight,backgroundCss,scrollBarCss;
+        scrollBarCss = {
+            "height":100-this.options["marginTop"]*2+"%",
+            "top":this.options["marginTop"]+"%"
+        }
+        if(!this.options["hasButton"]){
+            buttonHeight = 0;
+            backgroundCss = {
+                height:100-this.options["marginTop"]*2+"%",
+                //top:this.options["marginTop"]+"%"
+            }
+        }else{
+            buttonHeight = this.options["buttonPercentum"]+"%";
+            backgroundCss = {
+                height:100-this.options["buttonPercentum"]*2-this.options["marginTop"]*2+"%",
+            }
+        }
+        $.extend(this.options["scrollBarCss"],scrollBarCss);
+        $.extend(this.options["backgroundCss"],backgroundCss);
+        this.options["nextButtonCss"]["height"]=
+            this.options["prevButtonCss"]["height"]=buttonHeight;
+        this.xiaoScrollDOM["prev"].css(this.options["prevButtonCss"])
+        this.xiaoScrollDOM["next"].css(this.options["nextButtonCss"])
+        this.xiaoScrollDOM["block"].css(this.options["blockCss"])
+        this.xiaoScrollDOM["scrollBar"].css(this.options["scrollBarCss"])
+        this.xiaoScrollDOM["background"].css(this.options["backgroundCss"])
+    }
+
     /**
      * 设置滚动条基本样式
      * **/
@@ -120,27 +177,20 @@
     }
 
     /**
-     * 计算滚动条位置
+     * 计算滚动条
      * **/
     XiaoScrollBar.prototype.__calculateScrollBar = function(){
-        var elementMarginTop = parseFloat(this.$element.css("marginTop"));
-        var elementBorderTop = parseFloat(this.$element.css("borderTopWidth"));
-        var left = this.$element.position().left + this.$element.outerWidth()
-            -this.xiaoScrollDOM["scrollBar"].innerWidth();
-        var top = this.$element.position().top+elementMarginTop+elementBorderTop;
         var height = this.$element.innerHeight();
         this.xiaoScrollDOM["scrollBar"].css({
-            "top":top,
-            "left":left,
             "height":height
         });
     }
 
     /**
-     * 计算滚动块大小
+     * 计算滚动块
      * **/
     XiaoScrollBar.prototype.__calculateBlock = function(){
-       var backgroundHeight = this.xiaoScrollDOM["background"].innerHeight(),
+       var backgroundHeight = this.xiaoScrollDOM["scrollBar"].find(".xiaoScrollBarBackground").innerHeight(),
            contentHeight = this.$element[0].scrollHeight,
            viewHeight = this.$element.innerHeight(),
            blockHeight = (viewHeight/contentHeight)*backgroundHeight;
@@ -154,6 +204,47 @@
         this.mouseScrollMoveContent();
         this.dragBlockMoveContent();
         this.scrollBtnMoveContent();
+        this.clickScrollBcakcgroundMoveContent();
+        this.scrollBarHideAndShow();
+    }
+
+    /**
+     * 滚动条显示隐藏
+     * **/
+    XiaoScrollBar.prototype.scrollBarHideAndShow = function(){
+        var self = this;
+        this.xiaoScrollDOM["wrap"].on("mouseenter",function(){
+            self.show()
+        })
+        this.xiaoScrollDOM["wrap"].on("mouseleave",function(){
+            self.hide()
+        })
+    }
+
+    /**
+     * 点击滚动条滚动内容
+     * **/
+    XiaoScrollBar.prototype.clickScrollBcakcgroundMoveContent = function(){
+        var self = this;
+        this.xiaoScrollDOM["background"].click(function(e){
+            var event = e || window.event,clickY = event.pageY,
+                blockHeight=self.xiaoScrollDOM["block"].innerHeight(),
+                afterClick,
+                backgroundOffsetTop = self.xiaoScrollDOM["background"].offset().top;
+                afterClick = clickY-backgroundOffsetTop-blockHeight/2;
+            afterClick = self.getActualRange(afterClick);
+            self.xiaoScrollDOM["block"].css({
+                "top":afterClick
+            })
+            self.moveContentByBlockY()
+        })
+    }
+
+    /**
+     * 内容滚动的回调函数
+     * **/
+    XiaoScrollBar.prototype.contentMoveCallBack = function(){
+        this.options["contentMoveCallBack"] && this.options["contentMoveCallBack"]();
     }
 
     /**
@@ -164,7 +255,7 @@
         //ie chrom ,火狐 鼠标滚轮事件不同
         this.$element.bind("mousewheel DOMMouseScroll",function(e){
             var direction = mousewheelDirection(e);
-            self.scrollContentByBlockY(direction)
+            self.scrollContentByBlockY(direction);
             return false;
         })
     }
@@ -213,24 +304,26 @@
             mouseDownY,self=this;
         block.on("mousedown",function(e){
             var event = window.event || e;
-            mouseDownY = e.pageY;
+            mouseDownY = event.pageY;
             self.operateStatus["isDragIng"] = true;
         })
-
+        block.on("click",function(e){
+            var event = window.event || e;
+            if(event.stopPropagation){
+                event.stopPropagation();
+            }else{
+                event.cancelBubble = true;
+            }
+        })
         this.xiaoScrollDOM["wrap"].on("mousemove",function(e){
             if(self.operateStatus["isDragIng"]){
                 var event = window.event || e,
-                    curMoveY = e.pageY,
+                    curMoveY = event.pageY,
                     blockMoveLength = curMoveY - mouseDownY,
                     blockTop = block.position().top,
-                    afterMoveBlockTop = blockTop+blockMoveLength,
-                    blockBackgroundHeight = self.xiaoScrollDOM["background"].innerHeight(),
-                    blockHeight = self.xiaoScrollDOM["block"].height();
-                if(afterMoveBlockTop<0){
-                    afterMoveBlockTop = 0;
-                }else if(afterMoveBlockTop>blockBackgroundHeight-blockHeight){
-                    afterMoveBlockTop = blockBackgroundHeight-blockHeight;
-                }
+                    afterMoveBlockTop = blockTop+blockMoveLength;
+
+                afterMoveBlockTop = self.getActualRange(afterMoveBlockTop)
                 block.css({
                     "top":afterMoveBlockTop
                 })
@@ -259,15 +352,9 @@
      * 滚动滚动块移动内容
      * **/
     XiaoScrollBar.prototype.scrollContentByBlockY = function(direction){
-        var contentTarget,blockTop = this.xiaoScrollDOM["block"].position().top,
+        var blockTop = this.xiaoScrollDOM["block"].position().top,
             blockTarget = direction*this.options["moveBlockLength"]+blockTop,
-            blockBackgroundHeight = this.xiaoScrollDOM["background"].innerHeight(),
-            blockHeight = this.xiaoScrollDOM["block"].height();
-        if(blockTarget >= blockBackgroundHeight-blockHeight){
-            blockTarget = blockBackgroundHeight-blockHeight
-        }else if(blockTarget <= 0){
-            blockTarget = 0;
-        }
+            blockTarget = this.getActualRange(blockTarget);
         this.moveBlock(blockTarget,"top");
         this.moveContentByBlockY(blockTarget)
     }
@@ -288,7 +375,8 @@
         }else if(contentTarget <= 0){
             contentTarget = 0;
         }
-        this.moveContent(contentTarget)
+        this.moveContent(contentTarget);
+        this.contentMoveCallBack();
     }
 
     /**
@@ -341,12 +429,37 @@
         return this.operateStatus["isDragIng"]
     }
 
+    /**
+     * 获取块位置的实际值
+     * **/
+    XiaoScrollBar.prototype.getActualRange= function(blockTarget){
+        var blockBackgroundHeight = this.xiaoScrollDOM["background"].innerHeight(),
+            blockHeight = this.xiaoScrollDOM["block"].height();
+        if(blockTarget >= blockBackgroundHeight-blockHeight){
+            blockTarget = blockBackgroundHeight-blockHeight
+        }else if(blockTarget <= 0){
+            blockTarget = 0;
+        }
+        return blockTarget
+    }
 
-    //获取运动距离
+    /**
+     * 获取运动距离
+     * **/
     function getSpeed(curPostion,targetPosition){
         var speed = (targetPosition-curPostion)/12;
         speed = speed>0?Math.ceil(speed):Math.floor(speed);
         return speed;
+    }
+
+    XiaoScrollBar.prototype.show = function(){
+        this.xiaoScrollDOM["scrollBar"].stop()
+        this.xiaoScrollDOM["scrollBar"].fadeIn();
+    }
+
+    XiaoScrollBar.prototype.hide = function(){
+        this.xiaoScrollDOM["scrollBar"].stop()
+        this.xiaoScrollDOM["scrollBar"].fadeOut();
     }
 
     function Plugin(option){
