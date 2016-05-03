@@ -1,6 +1,6 @@
 {
   "name": "Xiaoscrollbar",
   "tagline": "自定义滚动条",
-  "body": "<div>自定义滚动条</div>",
+  "body": "## 自定义滚动条\r\n     为了使滚动条在样式上 有更高的自由度 以及防止滚动条出现时会对页面布局产生影响 所以写了这个滚动条\r\n    ie7 以上包含ie7 的版本都是没问题的",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
