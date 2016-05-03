@@ -31,9 +31,6 @@
  *  @param nextButtonCss         object 下方滚动按钮样式
  *  @param prevButtonCss         object 上方滚动按钮样式
  *
- *  注意:
- *  1. 参数中的样式的优先级是大于样式表中的
- *  2. 不建议直接设置滚动块滚动条的高度
  * **/
 (function($){
 
@@ -77,7 +74,7 @@
         this.options = $.extend({},XiaoScrollBar.DEFAULTS,options);
         this.xiaoScrollDOM = {};
         this.operateStatus = {
-            "isisDragIng":false
+            "isDragIng":false
         };
         this.initXiaoScrollBarView();
         this.initXiaoScrollBarEvent();
@@ -353,7 +350,7 @@
      * **/
     XiaoScrollBar.prototype.scrollContentByBlockY = function(direction){
         var blockTop = this.xiaoScrollDOM["block"].position().top,
-            blockTarget = direction*this.options["moveBlockLength"]+blockTop,
+            blockTarget = Math.round(direction*this.options["moveBlockLength"]+blockTop),
             blockTarget = this.getActualRange(blockTarget);
         this.moveBlock(blockTarget,"top");
         this.moveContentByBlockY(blockTarget)
@@ -386,7 +383,7 @@
         var self = this,timer = this.xiaoScrollDOM["block"].data("xiaoTimer"),block =this.xiaoScrollDOM["block"];
         clearInterval(timer)
         timer = setInterval(function(){
-            var curpotion =block.position()[attr],speed = getSpeed(curpotion,target)
+            var curpotion =Math.round(block.position()[attr]),speed = getSpeed(curpotion,target)
             if(curpotion == target||self.isStopMove()){
                 clearInterval(timer);
             }else{
