@@ -1,0 +1,42 @@
+*{padding:0;margin:0;}
+
+.clearfix {
+    *zoom:1;
+}
+
+.clearfix:after{
+    content:"\300B";
+    display: block;
+    clear: both;
+    height: 0;
+    visibility: hidden;
+}
+
+
+p{
+    width: 240px;
+    height:400px;
+    padding:5px 15px;
+}
+.title{
+    margin-bottom: 35px;
+    border-bottom: 3px solid #000;
+}
+.demo {
+    padding:10px;
+    float: left;
+    line-height: 35px;
+}
+
+.cont2{
+    background: #000000;
+    color: #ffffff;
+}
+
+.cont3{
+    background: #BC9808;
+    color: #ffffff;
+}
+.cont3{
+    padding:5px 25px;
+}
